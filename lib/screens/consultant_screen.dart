@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../colors.dart';
 
 class ConsultantScreen extends StatelessWidget {
+  const ConsultantScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

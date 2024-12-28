@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:pet_care_app/main.dart';
 import 'package:pet_care_finder/main.dart';
 
 void main() {

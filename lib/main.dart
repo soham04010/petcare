@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/products_screen.dart';
@@ -9,6 +11,8 @@ void main() {
 }
 
 class PetCareApp extends StatelessWidget {
+  const PetCareApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -20,6 +24,8 @@ class PetCareApp extends StatelessWidget {
 }
 
 class BottomNavBar extends StatefulWidget {
+  const BottomNavBar({super.key});
+
   @override
   _BottomNavBarState createState() => _BottomNavBarState();
 }
