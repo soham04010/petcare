@@ -1,15 +1,20 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/products_screen.dart';
 import 'screens/locate_screen.dart';
 import 'screens/consultant_screen.dart';
 import 'screens/account_screen.dart';
+import 'screens/locate_screen.dart';
 
 void main() {
   runApp(PetCareApp());
 }
 
 class PetCareApp extends StatelessWidget {
+  const PetCareApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -21,6 +26,8 @@ class PetCareApp extends StatelessWidget {
 }
 
 class BottomNavBar extends StatefulWidget {
+  const BottomNavBar({super.key});
+
   @override
   _BottomNavBarState createState() => _BottomNavBarState();
 }
@@ -46,15 +53,26 @@ class _BottomNavBarState extends State<BottomNavBar> {
             _currentIndex = index;
           });
         },
-        backgroundColor: Colors.orange, // Add this line to set the background color
+        backgroundColor:
+            Colors.orange, // Add this line to set the background color
         selectedItemColor: Colors.blue, // Color of the selected item
         unselectedItemColor: Colors.grey, // Color of the unselected items
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+ feature/Ayush
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_bag), label: 'Products'),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Location'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.support_agent), label: 'Consultant'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.account_circle), label: 'Account'),
+
           BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Products'),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Location'),
           BottomNavigationBarItem(icon: Icon(Icons.support_agent), label: 'Consultant'),
           BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Account'),
+ main
         ],
       ),
     );
