@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/products_screen.dart';
+import 'screens/locate_screen.dart';
 import 'screens/consultant_screen.dart';
 import 'screens/account_screen.dart';
 import 'screens/locate_screen.dart';
@@ -58,6 +59,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         unselectedItemColor: Colors.grey, // Color of the unselected items
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+ feature/Ayush
           BottomNavigationBarItem(
               icon: Icon(Icons.shopping_bag), label: 'Products'),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Location'),
@@ -65,6 +67,12 @@ class _BottomNavBarState extends State<BottomNavBar> {
               icon: Icon(Icons.support_agent), label: 'Consultant'),
           BottomNavigationBarItem(
               icon: Icon(Icons.account_circle), label: 'Account'),
+
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Products'),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Location'),
+          BottomNavigationBarItem(icon: Icon(Icons.support_agent), label: 'Consultant'),
+          BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Account'),
+ main
         ],
       ),
     );
