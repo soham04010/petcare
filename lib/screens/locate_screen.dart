@@ -2,13 +2,8 @@ import 'dart:async';
 import 'dart:math'; // Add this import for mathematical functions
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
- feature/Ayush
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-
-import 'package:latlong2/latlong.dart';
-import 'package:geolocator/geolocator.dart';
- main
 
 class LocateScreen extends StatefulWidget {
   @override
@@ -16,13 +11,16 @@ class LocateScreen extends StatefulWidget {
 }
 
 class _LocateScreenState extends State<LocateScreen> {
- feature/Ayush
   LatLng? userLocation;
   List<Marker> shopMarkers = [];
   bool isLoading = true;
   TextEditingController searchController = TextEditingController();
   List<Map<String, dynamic>> allShops = [
-    {"name": "Vet Shop 1", "lat": 23.0225, "lon": 72.5714}, // Example shop in Ahmedabad, Gujarat
+    {
+      "name": "Vet Shop 1",
+      "lat": 23.0225,
+      "lon": 72.5714
+    }, // Example shop in Ahmedabad, Gujarat
     {"name": "Vet Shop 2", "lat": 23.0275, "lon": 72.5845},
     {"name": "Vet Shop 3", "lat": 23.0325, "lon": 72.5960},
     // Add more shops here
@@ -30,14 +28,9 @@ class _LocateScreenState extends State<LocateScreen> {
 
   StreamSubscription<Position>? positionStream; // Nullable StreamSubscription
 
-  LatLng _currentLocation = LatLng(0, 0); // Default location
-  bool _isLoading = true;
- main
-
   @override
   void initState() {
     super.initState();
- feature/Ayush
     _checkLocationStatus();
     _addShopMarkers();
   }
@@ -49,8 +42,9 @@ class _LocateScreenState extends State<LocateScreen> {
       _getUserLocation();
     } else {
       setState(() {
-        userLocation = LatLng(23.0225, 72.5714); // Default location (Gujarat, Ahmedabad)
-        isLoading = false;  // Stop loading when location is disabled
+        userLocation =
+            LatLng(23.0225, 72.5714); // Default location (Gujarat, Ahmedabad)
+        isLoading = false; // Stop loading when location is disabled
       });
     }
   }
@@ -60,7 +54,8 @@ class _LocateScreenState extends State<LocateScreen> {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission != LocationPermission.whileInUse && permission != LocationPermission.always) {
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
         setState(() {
           isLoading = false;
         });
@@ -74,14 +69,15 @@ class _LocateScreenState extends State<LocateScreen> {
           desiredAccuracy: LocationAccuracy.high);
       setState(() {
         userLocation = LatLng(position.latitude, position.longitude);
-        isLoading = false;  // Stop loading when location is fetched
+        isLoading = false; // Stop loading when location is fetched
       });
 
       // Start listening for continuous location updates
       positionStream = Geolocator.getPositionStream(
         locationSettings: LocationSettings(
           accuracy: LocationAccuracy.high,
-          distanceFilter: 10, // minimum distance (in meters) before updating location
+          distanceFilter:
+              10, // minimum distance (in meters) before updating location
         ),
       ).listen((Position position) {
         if (mounted) {
@@ -90,7 +86,6 @@ class _LocateScreenState extends State<LocateScreen> {
           });
         }
       });
-
     } catch (e) {
       print('Error getting user location: $e');
       setState(() {
@@ -107,8 +102,10 @@ class _LocateScreenState extends State<LocateScreen> {
     var dLat = _toRadians(end.latitude - start.latitude);
     var dLon = _toRadians(end.longitude - start.longitude);
     var a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_toRadians(start.latitude)) * cos(_toRadians(end.latitude)) *
-        sin(dLon / 2) * sin(dLon / 2);
+        cos(_toRadians(start.latitude)) *
+            cos(_toRadians(end.latitude)) *
+            sin(dLon / 2) *
+            sin(dLon / 2);
     var c = 2 * atan2(sqrt(a), sqrt(1 - a));
     return R * c; // Distance in km
   }
@@ -134,45 +131,15 @@ class _LocateScreenState extends State<LocateScreen> {
     super.dispose();
   }
 
-    _getUserLocation();
-  }
-
-  Future<void> _getUserLocation() async {
-    try {
-      // Request location permission
-      LocationPermission permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // Get the user's current location
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-
-      setState(() {
-        _currentLocation = LatLng(position.latitude, position.longitude);
-        _isLoading = false;
-      });
-    } catch (e) {
-      print("Error fetching location: $e");
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
- main
-
   @override
   Widget build(BuildContext context) {
     // If location is available, calculate nearest shops
     if (userLocation != null) {
       allShops.sort((a, b) {
-        double distanceA = _calculateDistance(userLocation!, LatLng(a['lat'], a['lon']));
-        double distanceB = _calculateDistance(userLocation!, LatLng(b['lat'], b['lon']));
+        double distanceA =
+            _calculateDistance(userLocation!, LatLng(a['lat'], a['lon']));
+        double distanceB =
+            _calculateDistance(userLocation!, LatLng(b['lat'], b['lon']));
         return distanceA.compareTo(distanceB);
       });
     }
@@ -180,7 +147,6 @@ class _LocateScreenState extends State<LocateScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Locate Nearby Services'),
- feature/Ayush
         backgroundColor: Colors.orangeAccent,
       ),
       body: isLoading
@@ -202,19 +168,23 @@ class _LocateScreenState extends State<LocateScreen> {
                 Expanded(
                   child: FlutterMap(
                     options: MapOptions(
-                      center: userLocation ?? LatLng(23.0225, 72.5714), // Default to Gujarat (Ahmedabad)
+                      center: userLocation ??
+                          LatLng(23.0225,
+                              72.5714), // Default to Gujarat (Ahmedabad)
                       zoom: 14.0,
                     ),
                     children: [
                       TileLayer(
-                        urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        urlTemplate:
+                            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                         subdomains: ['a', 'b', 'c'],
                       ),
                       MarkerLayer(markers: [
                         if (userLocation != null)
                           Marker(
                             point: userLocation!,
-                            builder: (ctx) => Icon(Icons.my_location, color: Colors.blue, size: 30),
+                            builder: (ctx) => Icon(Icons.my_location,
+                                color: Colors.blue, size: 30),
                           ),
                         ...shopMarkers,
                       ]),
@@ -227,40 +197,7 @@ class _LocateScreenState extends State<LocateScreen> {
         onPressed: _getUserLocation,
         backgroundColor: Colors.orangeAccent,
         child: Icon(Icons.my_location),
-
-        backgroundColor: Colors.orange,
- main
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : FlutterMap(
-              options: MapOptions(
-                center: _currentLocation, // Center to user's location
-                zoom: 13.0,
-              ),
-              children: [
-                // Map tiles
-                TileLayer(
-                  urlTemplate:
-                      "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=13bfe10962d741fe9d94539c00331798",
-                  additionalOptions: {
-                    'apiKey': '13bfe10962d741fe9d94539c00331798',
-                  },
-                ),
-                // Marker for current location
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      width: 80.0,
-                      height: 80.0,
-                      point: _currentLocation,
-                      builder: (ctx) => Icon(Icons.location_on,
-                          color: Colors.red, size: 40),
-                    ),
-                  ],
-                ),
-              ],
-            ),
     );
   }
 }
