@@ -1,6 +1,52 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
-class AccountScreen extends StatelessWidget {
+class AccountScreen extends StatefulWidget {
+  @override
+  _AccountScreenState createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  File? profileImage;
+  bool isDarkMode = false;
+
+  // Function to pick an image
+  Future<void> pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        profileImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  // Function to show logout confirmation dialog
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Logout'),
+        content: Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Add logout logic here (e.g., clear user session and navigate to login screen)
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: Text('Logout'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,13 +65,21 @@ class AccountScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     // Profile Picture
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.orangeAccent.withOpacity(0.5),
-                      child: Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.white,
+                    GestureDetector(
+                      onTap: pickImage,
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.orangeAccent.withOpacity(0.5),
+                        backgroundImage: profileImage != null
+                            ? FileImage(profileImage!)
+                            : null,
+                        child: profileImage == null
+                            ? Icon(
+                                Icons.person,
+                                size: 60,
+                                color: Colors.white,
+                              )
+                            : null,
                       ),
                     ),
                     SizedBox(height: 10),
@@ -54,7 +108,12 @@ class AccountScreen extends StatelessWidget {
                 title: Text('Edit Profile'),
                 trailing: Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
-                  // Navigate to edit profile page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlaceholderScreen('Edit Profile'),
+                    ),
+                  );
                 },
               ),
               Divider(),
@@ -65,7 +124,12 @@ class AccountScreen extends StatelessWidget {
                 title: Text('Settings'),
                 trailing: Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
-                  // Navigate to settings page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlaceholderScreen('Settings'),
+                    ),
+                  );
                 },
               ),
               Divider(),
@@ -76,7 +140,13 @@ class AccountScreen extends StatelessWidget {
                 title: Text('Change Password'),
                 trailing: Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
-                  // Navigate to change password page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          PlaceholderScreen('Change Password'),
+                    ),
+                  );
                 },
               ),
               Divider(),
@@ -88,9 +158,7 @@ class AccountScreen extends StatelessWidget {
                   'Logout',
                   style: TextStyle(color: Colors.red),
                 ),
-                onTap: () {
-                  // Perform logout action
-                },
+                onTap: () => _showLogoutDialog(context),
               ),
               Divider(),
 
@@ -100,25 +168,56 @@ class AccountScreen extends StatelessWidget {
                 title: Text('Contact Support'),
                 trailing: Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
-                  // Navigate to support page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlaceholderScreen('Contact Support'),
+                    ),
+                  );
                 },
               ),
               Divider(),
 
-              // Optional: Dark Mode Toggle
+              // Dark Mode Toggle
               ListTile(
                 leading:
                     Icon(Icons.dark_mode_outlined, color: Colors.orangeAccent),
                 title: Text('Dark Mode'),
                 trailing: Switch(
-                  value: false,
+                  value: isDarkMode,
                   onChanged: (value) {
-                    // Toggle dark mode
+                    setState(() {
+                      isDarkMode = value;
+                      // Add logic to toggle dark mode in the app
+                    });
                   },
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// Placeholder screen for navigation
+class PlaceholderScreen extends StatelessWidget {
+  final String title;
+
+  const PlaceholderScreen(this.title);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+        backgroundColor: Colors.orangeAccent,
+      ),
+      body: Center(
+        child: Text(
+          '$title Page',
+          style: TextStyle(fontSize: 18),
         ),
       ),
     );
