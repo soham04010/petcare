@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pet_care_finder/screens/acc_func/profile.dart';
 
 class AccountScreen extends StatefulWidget {
   @override
@@ -11,10 +13,33 @@ class _AccountScreenState extends State<AccountScreen> {
   File? profileImage;
   bool isDarkMode = false;
 
-  // Function to pick an image
+  String _name = '';
+  String _email = '';
+  String _mobile = '';
+  String _address = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedProfile();
+  }
+
+  void _loadSavedProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _name = prefs.getString('name') ?? 'John Doe';
+        _email = prefs.getString('email') ?? 'johndoe@example.com';
+        _mobile = prefs.getString('mobile') ?? '';
+        _address = prefs.getString('address') ?? '';
+      });
+    } catch (e) {
+      print('Error loading profile: $e');
+    }
+  }
+
   Future<void> pickImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         profileImage = File(pickedFile.path);
@@ -22,7 +47,6 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
-  // Function to show logout confirmation dialog
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -37,7 +61,6 @@ class _AccountScreenState extends State<AccountScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // Add logout logic here (e.g., clear user session and navigate to login screen)
               Navigator.pushReplacementNamed(context, '/login');
             },
             child: Text('Logout'),
@@ -45,6 +68,22 @@ class _AccountScreenState extends State<AccountScreen> {
         ],
       ),
     );
+  }
+
+  void _navigateToEditProfile() async {
+    final updatedProfile = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditProfileScreen()),
+    );
+
+    if (updatedProfile != null) {
+      setState(() {
+        _name = updatedProfile['name'] ?? _name;
+        _email = updatedProfile['email'] ?? _email;
+        _mobile = updatedProfile['mobile'] ?? _mobile;
+        _address = updatedProfile['address'] ?? _address;
+      });
+    }
   }
 
   @override
@@ -60,11 +99,9 @@ class _AccountScreenState extends State<AccountScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Profile Section
               Center(
                 child: Column(
                   children: [
-                    // Profile Picture
                     GestureDetector(
                       onTap: pickImage,
                       child: CircleAvatar(
@@ -74,114 +111,66 @@ class _AccountScreenState extends State<AccountScreen> {
                             ? FileImage(profileImage!)
                             : null,
                         child: profileImage == null
-                            ? Icon(
-                                Icons.person,
-                                size: 60,
-                                color: Colors.white,
-                              )
+                            ? Icon(Icons.person, size: 60, color: Colors.white)
                             : null,
                       ),
                     ),
                     SizedBox(height: 10),
                     Text(
-                      'John Doe',
+                      _name,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      'johndoe@example.com',
+                      _email,
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
                       ),
                     ),
+                    if (_mobile.isNotEmpty) 
+                      Text(
+                        _mobile,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
                   ],
                 ),
               ),
               SizedBox(height: 30),
-
-              // Personal Details
-              ListTile(
-                leading: Icon(Icons.person_outline, color: Colors.orangeAccent),
-                title: Text('Edit Profile'),
-                trailing: Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PlaceholderScreen('Edit Profile'),
-                    ),
-                  );
-                },
+              
+              // Account Management Options
+              _buildAccountOption(
+                icon: Icons.person_outline,
+                title: 'Edit Profile',
+                onTap: _navigateToEditProfile,
               ),
-              Divider(),
-
-              // Settings Section
-              ListTile(
-                leading: Icon(Icons.settings, color: Colors.orangeAccent),
-                title: Text('Settings'),
-                trailing: Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PlaceholderScreen('Settings'),
-                    ),
-                  );
-                },
+              _buildAccountOption(
+                icon: Icons.settings,
+                title: 'Settings',
+                onTap: () => _navigateToPlaceholder('Settings'),
               ),
-              Divider(),
-
-              // Privacy and Security
-              ListTile(
-                leading: Icon(Icons.lock_outline, color: Colors.orangeAccent),
-                title: Text('Change Password'),
-                trailing: Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          PlaceholderScreen('Change Password'),
-                    ),
-                  );
-                },
+              _buildAccountOption(
+                icon: Icons.lock_outline,
+                title: 'Change Password',
+                onTap: () => _navigateToPlaceholder('Change Password'),
               ),
-              Divider(),
-
-              // Logout Section
-              ListTile(
-                leading: Icon(Icons.logout, color: Colors.red),
-                title: Text(
-                  'Logout',
-                  style: TextStyle(color: Colors.red),
-                ),
-                onTap: () => _showLogoutDialog(context),
+              _buildAccountOption(
+                icon: Icons.help_outline,
+                title: 'Contact Support',
+                onTap: () => _navigateToPlaceholder('Contact Support'),
               ),
-              Divider(),
-
-              // Support Section
-              ListTile(
-                leading: Icon(Icons.help_outline, color: Colors.orangeAccent),
-                title: Text('Contact Support'),
-                trailing: Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PlaceholderScreen('Contact Support'),
-                    ),
-                  );
-                },
-              ),
-              Divider(),
-
+              
+              // Logout Option
+              _buildLogoutOption(),
+              
               // Dark Mode Toggle
               ListTile(
-                leading:
-                    Icon(Icons.dark_mode_outlined, color: Colors.orangeAccent),
+                leading: Icon(Icons.dark_mode_outlined, color: Colors.orangeAccent),
                 title: Text('Dark Mode'),
                 trailing: Switch(
                   value: isDarkMode,
@@ -199,9 +188,49 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
     );
   }
+
+  Widget _buildAccountOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(icon, color: Colors.orangeAccent),
+          title: Text(title),
+          trailing: Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: onTap,
+        ),
+        Divider(),
+      ],
+    );
+  }
+
+  Widget _buildLogoutOption() {
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(Icons.logout, color: Colors.red),
+          title: Text(
+            'Logout',
+            style: TextStyle(color: Colors.red),
+          ),
+          onTap: () => _showLogoutDialog(context),
+        ),
+        Divider(),
+      ],
+    );
+  }
+
+  void _navigateToPlaceholder(String title) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PlaceholderScreen(title)),
+    );
+  }
 }
 
-// Placeholder screen for navigation
 class PlaceholderScreen extends StatelessWidget {
   final String title;
 

@@ -10,8 +10,8 @@
     <application
         android:label="pet_care_finder"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
-
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
          <!-- FileProvider for image_picker -->
     <provider
         android:name="androidx.core.content.FileProvider"
