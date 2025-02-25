@@ -1,0 +1,2 @@
+C:/SSIP/petcare/android/app/.cxx/Debug/5u473z4w/x86/CMakeFiles/edit_cache.dir
+C:/SSIP/petcare/android/app/.cxx/Debug/5u473z4w/x86/CMakeFiles/rebuild_cache.dir
