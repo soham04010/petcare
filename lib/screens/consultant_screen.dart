@@ -8,7 +8,7 @@ class ConsultantScreen extends StatefulWidget {
 }
 
 class _ConsultantScreenState extends State<ConsultantScreen> {
-  List<dynamic>? consultants;
+  List<dynamic> consultants = []; // Changed to non-nullable list
   bool isLoading = true;
 
   @override
@@ -22,18 +22,22 @@ class _ConsultantScreenState extends State<ConsultantScreen> {
     try {
       var data = await ConsultantService().fetchConsultants();
 
-      setState(() {
-        consultants = data;
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          consultants = data;
+          isLoading = false;
+        });
+      }
 
-      print("✅ Consultants Loaded: ${consultants!.length}"); // Debug log
+      print("✅ Consultants Loaded: ${consultants.length}"); // Debug log
     } catch (e) {
       print('❌ Error fetching consultants: $e');
-      setState(() {
-        consultants = [];
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          consultants = [];
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -58,12 +62,12 @@ class _ConsultantScreenState extends State<ConsultantScreen> {
       appBar: AppBar(title: Text('Consultants'), backgroundColor: Colors.orange),
       body: isLoading
           ? Center(child: CircularProgressIndicator()) // Show loading spinner
-          : (consultants == null || consultants!.isEmpty)
+          : consultants.isEmpty
               ? Center(child: Text("⚠ No consultants available."))
               : ListView.builder(
-                  itemCount: consultants!.length,
+                  itemCount: consultants.length,
                   itemBuilder: (context, index) {
-                    var consultant = consultants![index];
+                    var consultant = consultants[index];
                     return Card(
                       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       elevation: 4,
@@ -74,11 +78,11 @@ class _ConsultantScreenState extends State<ConsultantScreen> {
                           child: Icon(Icons.person, color: Colors.white),
                         ),
                         title: Text(
-                          consultant['name'],
+                          consultant['name'] ?? 'Unknown',
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         subtitle: Text(
-                          'Experience: ${consultant['experience']} years\nSpecialization: ${consultant['specialization']}',
+                          'Experience: ${consultant['experience'] ?? 'N/A'} years\nSpecialization: ${consultant['specialization'] ?? 'N/A'}',
                         ),
                         trailing: ElevatedButton(
                           onPressed: () => bookConsultant(consultant['_id']),
