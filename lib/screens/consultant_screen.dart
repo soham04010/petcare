@@ -1,89 +1,122 @@
 import 'package:flutter/material.dart';
-// ignore: depend_on_referenced_packages
+import 'package:pet_care_finder/services/consultant_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ConsultantScreen extends StatelessWidget {
-  // List of consultants
-  final List<Map<String, String>> consultants = [
-    {
-      "name": "Dr. Ramesh Kumar",
-      "mobile": "9876543210",
-      "experience": "10 years",
-      "specialization": "Veterinary Medicine"
-    },
-    {
-      "name": "Dr. Anjali Mehta",
-      "mobile": "9123456789",
-      "experience": "8 years",
-      "specialization": "Animal Nutrition"
-    },
-    {
-      "name": "Dr. Ravi Patel",
-      "mobile": "8899001122",
-      "experience": "5 years",
-      "specialization": "Pet Surgery"
-    },
-  ];
+class ConsultantScreen extends StatefulWidget {
+  @override
+  _ConsultantScreenState createState() => _ConsultantScreenState();
+}
+
+class _ConsultantScreenState extends State<ConsultantScreen> {
+  List<dynamic>? consultants;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadConsultants();
+  }
+
+  // Fetch consultants from API
+  void loadConsultants() async {
+    try {
+      var data = await ConsultantService().fetchConsultants();
+
+      setState(() {
+        consultants = data;
+        isLoading = false;
+      });
+
+      print("✅ Consultants Loaded: ${consultants!.length}"); // Debug log
+    } catch (e) {
+      print('❌ Error fetching consultants: $e');
+      setState(() {
+        consultants = [];
+        isLoading = false;
+      });
+    }
+  }
+
+  // Book a consultant
+  void bookConsultant(String id) async {
+    bool success = await ConsultantService().bookConsultant(id);
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("✅ Consultant booked successfully!")),
+      );
+      loadConsultants(); // Refresh list
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("❌ Failed to book consultant. Please try again.")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Consultants'),
-        backgroundColor: Colors.orange,
-      ),
-      body: ListView.builder(
-        itemCount: consultants.length,
-        itemBuilder: (context, index) {
-          final consultant = consultants[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.blue,
-                child: Icon(Icons.person, color: Colors.white),
-              ),
-              title: Text(
-                consultant['name'] ?? '',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              subtitle: Text(
-                'Experience: ${consultant['experience']}\nSpecialization: ${consultant['specialization']}',
-              ),
-              trailing: Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                // Navigate to consultant details page
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ConsultantDetailsScreen(
-                      name: consultant['name'] ?? '',
-                      mobile: consultant['mobile'] ?? '',
-                      experience: consultant['experience'] ?? '',
-                      specialization: consultant['specialization'] ?? '',
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      ),
+      appBar: AppBar(title: Text('Consultants'), backgroundColor: Colors.orange),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator()) // Show loading spinner
+          : (consultants == null || consultants!.isEmpty)
+              ? Center(child: Text("⚠ No consultants available."))
+              : ListView.builder(
+                  itemCount: consultants!.length,
+                  itemBuilder: (context, index) {
+                    var consultant = consultants![index];
+                    return Card(
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.blue,
+                          child: Icon(Icons.person, color: Colors.white),
+                        ),
+                        title: Text(
+                          consultant['name'],
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        subtitle: Text(
+                          'Experience: ${consultant['experience']} years\nSpecialization: ${consultant['specialization']}',
+                        ),
+                        trailing: ElevatedButton(
+                          onPressed: () => bookConsultant(consultant['_id']),
+                          child: Text("Book"),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                        ),
+                        onTap: () {
+                          // Navigate to consultant details page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ConsultantDetailsScreen(
+                                id: consultant['_id'],
+                                name: consultant['name'],
+                                mobile: consultant['phone'],
+                                experience: consultant['experience'].toString(),
+                                specialization: consultant['specialization'],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }
 
 class ConsultantDetailsScreen extends StatelessWidget {
+  final String id;
   final String name;
   final String mobile;
   final String experience;
   final String specialization;
 
   ConsultantDetailsScreen({
+    required this.id,
     required this.name,
     required this.mobile,
     required this.experience,
@@ -93,45 +126,29 @@ class ConsultantDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Consultant Details'),
-        backgroundColor: Colors.orange,
-      ),
+      appBar: AppBar(title: Text('Consultant Details'), backgroundColor: Colors.orange),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              name,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
-            ),
+            Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
             SizedBox(height: 8),
-            Text(
-              'Experience: $experience',
-              style: TextStyle(fontSize: 16),
-            ),
+            Text('Experience: $experience years', style: TextStyle(fontSize: 16)),
             SizedBox(height: 8),
-            Text(
-              'Specialization: $specialization',
-              style: TextStyle(fontSize: 16),
-            ),
+            Text('Specialization: $specialization', style: TextStyle(fontSize: 16)),
             SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
-                  onPressed: () {
-                    _makeCall(mobile);
-                  },
+                  onPressed: () => _makeCall(mobile),
                   icon: Icon(Icons.call),
                   label: Text('Call'),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                 ),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    _sendMessage(mobile);
-                  },
+                  onPressed: () => _sendMessage(mobile),
                   icon: Icon(Icons.message),
                   label: Text('Message'),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
@@ -150,7 +167,7 @@ class ConsultantDetailsScreen extends StatelessWidget {
     if (await canLaunchUrl(callUri)) {
       await launchUrl(callUri);
     } else {
-      throw 'Could not launch $phoneNumber';
+      print('❌ Could not launch $phoneNumber');
     }
   }
 
@@ -160,7 +177,7 @@ class ConsultantDetailsScreen extends StatelessWidget {
     if (await canLaunchUrl(smsUri)) {
       await launchUrl(smsUri);
     } else {
-      throw 'Could not launch $phoneNumber';
+      print('❌ Could not launch $phoneNumber');
     }
   }
 }

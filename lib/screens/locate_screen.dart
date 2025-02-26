@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math'; // Add this import for mathematical functions
+import 'dart:math'; // Mathematical functions
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -15,69 +15,64 @@ class _LocateScreenState extends State<LocateScreen> {
   List<Marker> shopMarkers = [];
   bool isLoading = true;
   TextEditingController searchController = TextEditingController();
+
   List<Map<String, dynamic>> allShops = [
-    {
-      "name": "Vet Shop 1",
-      "lat": 23.0225,
-      "lon": 72.5714
-    }, // Example shop in Ahmedabad, Gujarat
+    {"name": "Vet Shop 1", "lat": 23.0225, "lon": 72.5714},
     {"name": "Vet Shop 2", "lat": 23.0275, "lon": 72.5845},
     {"name": "Vet Shop 3", "lat": 23.0325, "lon": 72.5960},
-    // Add more shops here
   ];
 
-  StreamSubscription<Position>? positionStream; // Nullable StreamSubscription
+  StreamSubscription<Position>? positionStream; // Stream for continuous location updates
 
   @override
   void initState() {
     super.initState();
-    _checkLocationStatus();
+    _initializeLocation();
     _addShopMarkers();
   }
 
-  // Check if location services are enabled
-  Future<void> _checkLocationStatus() async {
+  // Initialize location services
+  Future<void> _initializeLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (serviceEnabled) {
-      _getUserLocation();
-    } else {
-      setState(() {
-        userLocation =
-            LatLng(23.0225, 72.5714); // Default location (Gujarat, Ahmedabad)
-        isLoading = false; // Stop loading when location is disabled
-      });
+    if (!serviceEnabled) {
+      _setDefaultLocation();
+      return;
     }
-  }
 
-  // Request user location
-  Future<void> _getUserLocation() async {
     LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
       permission = await Geolocator.requestPermission();
-      if (permission != LocationPermission.whileInUse &&
-          permission != LocationPermission.always) {
-        setState(() {
-          isLoading = false;
-        });
+      if (permission != LocationPermission.whileInUse && permission != LocationPermission.always) {
+        _setDefaultLocation();
         return;
       }
     }
 
-    // Fetch the location
+    _getUserLocation();
+  }
+
+  // Set a default location if location services are disabled
+  void _setDefaultLocation() {
+    setState(() {
+      userLocation = LatLng(23.0225, 72.5714); // Ahmedabad, Gujarat
+      isLoading = false;
+    });
+  }
+
+  // Get the user's current location
+  Future<void> _getUserLocation() async {
     try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       setState(() {
         userLocation = LatLng(position.latitude, position.longitude);
-        isLoading = false; // Stop loading when location is fetched
+        isLoading = false;
       });
 
       // Start listening for continuous location updates
       positionStream = Geolocator.getPositionStream(
         locationSettings: LocationSettings(
           accuracy: LocationAccuracy.high,
-          distanceFilter:
-              10, // minimum distance (in meters) before updating location
+          distanceFilter: 10, // Minimum distance before updating location
         ),
       ).listen((Position position) {
         if (mounted) {
@@ -88,11 +83,7 @@ class _LocateScreenState extends State<LocateScreen> {
       });
     } catch (e) {
       print('Error getting user location: $e');
-      setState(() {
-        // Fallback to Gujarat, India if location fetch fails
-        userLocation = LatLng(23.0225, 72.5714); // Ahmedabad, Gujarat
-        isLoading = false;
-      });
+      _setDefaultLocation();
     }
   }
 
@@ -126,20 +117,16 @@ class _LocateScreenState extends State<LocateScreen> {
 
   @override
   void dispose() {
-    // Cancel the stream subscription when the screen is disposed
-    positionStream?.cancel();
+    positionStream?.cancel(); // Cancel stream subscription
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // If location is available, calculate nearest shops
     if (userLocation != null) {
       allShops.sort((a, b) {
-        double distanceA =
-            _calculateDistance(userLocation!, LatLng(a['lat'], a['lon']));
-        double distanceB =
-            _calculateDistance(userLocation!, LatLng(b['lat'], b['lon']));
+        double distanceA = _calculateDistance(userLocation!, LatLng(a['lat'], a['lon']));
+        double distanceB = _calculateDistance(userLocation!, LatLng(b['lat'], b['lon']));
         return distanceA.compareTo(distanceB);
       });
     }
@@ -150,9 +137,7 @@ class _LocateScreenState extends State<LocateScreen> {
         backgroundColor: Colors.orangeAccent,
       ),
       body: isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
+          ? Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 Padding(
@@ -168,26 +153,24 @@ class _LocateScreenState extends State<LocateScreen> {
                 Expanded(
                   child: FlutterMap(
                     options: MapOptions(
-                      center: userLocation ??
-                          LatLng(23.0225,
-                              72.5714), // Default to Gujarat (Ahmedabad)
+                      center: userLocation ?? LatLng(23.0225, 72.5714), // Default to Ahmedabad, Gujarat
                       zoom: 14.0,
                     ),
                     children: [
                       TileLayer(
-                        urlTemplate:
-                            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                         subdomains: ['a', 'b', 'c'],
                       ),
-                      MarkerLayer(markers: [
-                        if (userLocation != null)
-                          Marker(
-                            point: userLocation!,
-                            builder: (ctx) => Icon(Icons.my_location,
-                                color: Colors.blue, size: 30),
-                          ),
-                        ...shopMarkers,
-                      ]),
+                      MarkerLayer(
+                        markers: [
+                          if (userLocation != null)
+                            Marker(
+                              point: userLocation!,
+                              builder: (ctx) => Icon(Icons.my_location, color: Colors.blue, size: 30),
+                            ),
+                          ...shopMarkers,
+                        ],
+                      ),
                     ],
                   ),
                 ),
