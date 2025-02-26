@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import '../constants.dart';
 
 class ConsultantService {
-  // Fetch consultants from the backend
   Future<List<dynamic>> fetchConsultants() async {
     try {
       final response = await http.get(
@@ -11,13 +10,13 @@ class ConsultantService {
         headers: {"Content-Type": "application/json"},
       );
 
-      print('Consultant API Response: ${response.body}'); // Debug log
+      print('📢 Consultant API Response: ${response.body}'); // Debug log
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
 
         if (data.isEmpty) {
-          print('⚠ No consultants found.');
+          print('⚠ No consultants found in API.');
         } else {
           print('✅ Consultants fetched: ${data.length}');
         }
@@ -33,6 +32,8 @@ class ConsultantService {
     }
   }
 
+  bookConsultant(String id) {}
+}
   // Book a consultant
   Future<bool> bookConsultant(String consultantId) async {
     try {
@@ -53,4 +54,4 @@ class ConsultantService {
       return false;
     }
   }
-}
+
