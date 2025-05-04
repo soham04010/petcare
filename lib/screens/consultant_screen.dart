@@ -8,7 +8,7 @@ class ConsultantScreen extends StatefulWidget {
 }
 
 class _ConsultantScreenState extends State<ConsultantScreen> {
-  List<dynamic> consultants = []; // Changed to non-nullable list
+  List<dynamic> consultants = [];
   bool isLoading = true;
 
   @override
@@ -17,7 +17,6 @@ class _ConsultantScreenState extends State<ConsultantScreen> {
     loadConsultants();
   }
 
-  // Fetch consultants from API
   void loadConsultants() async {
     try {
       var data = await ConsultantService().fetchConsultants();
@@ -29,7 +28,7 @@ class _ConsultantScreenState extends State<ConsultantScreen> {
         });
       }
 
-      print("✅ Consultants Loaded: ${consultants.length}"); // Debug log
+      print("✅ Consultants Loaded: ${consultants.length}");
     } catch (e) {
       print('❌ Error fetching consultants: $e');
       if (mounted) {
@@ -41,14 +40,13 @@ class _ConsultantScreenState extends State<ConsultantScreen> {
     }
   }
 
-  // Book a consultant
   void bookConsultant(String id) async {
     bool success = await ConsultantService().bookConsultant(id);
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("✅ Consultant booked successfully!")),
       );
-      loadConsultants(); // Refresh list
+      loadConsultants();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("❌ Failed to book consultant. Please try again.")),
@@ -61,13 +59,15 @@ class _ConsultantScreenState extends State<ConsultantScreen> {
     return Scaffold(
       appBar: AppBar(title: Text('Consultants'), backgroundColor: Colors.orange),
       body: isLoading
-          ? Center(child: CircularProgressIndicator()) // Show loading spinner
+          ? Center(child: CircularProgressIndicator())
           : consultants.isEmpty
               ? Center(child: Text("⚠ No consultants available."))
               : ListView.builder(
                   itemCount: consultants.length,
                   itemBuilder: (context, index) {
                     var consultant = consultants[index];
+                    bool isBooked = consultant['isBooked'] == true;
+
                     return Card(
                       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       elevation: 4,
@@ -82,15 +82,17 @@ class _ConsultantScreenState extends State<ConsultantScreen> {
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         subtitle: Text(
-                          'Experience: ${consultant['experience'] ?? 'N/A'} years\nSpecialization: ${consultant['specialization'] ?? 'N/A'}',
+                          'Experience: ${consultant['experience'] ?? 'N/A'} years\n'
+                          'Specialization: ${consultant['specialization'] ?? 'N/A'}',
                         ),
                         trailing: ElevatedButton(
-                          onPressed: () => bookConsultant(consultant['_id']),
-                          child: Text("Book"),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                          onPressed: isBooked ? null : () => bookConsultant(consultant['_id']),
+                          child: Text(isBooked ? "Booked" : "Book"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isBooked ? Colors.grey : Colors.green,
+                          ),
                         ),
                         onTap: () {
-                          // Navigate to consultant details page
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -165,7 +167,6 @@ class ConsultantDetailsScreen extends StatelessWidget {
     );
   }
 
-  // Function to make a call
   void _makeCall(String phoneNumber) async {
     final Uri callUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(callUri)) {
@@ -175,7 +176,6 @@ class ConsultantDetailsScreen extends StatelessWidget {
     }
   }
 
-  // Function to send a message
   void _sendMessage(String phoneNumber) async {
     final Uri smsUri = Uri(scheme: 'sms', path: phoneNumber);
     if (await canLaunchUrl(smsUri)) {
