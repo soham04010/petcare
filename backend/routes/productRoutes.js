@@ -1,11 +1,26 @@
-const express = require('express');
-const { getProducts, addProduct, buyProduct } = require('../controllers/productController');
-const { protect } = require('../middleware/authMiddleware');
-
+// routes/productRoutes.js
+const express = require("express");
 const router = express.Router();
+const Product = require("../models/Product");
 
-router.get('/', getProducts); // Fetch all products
-router.post('/add', protect, addProduct); // Add new product (only authenticated users)
-router.post('/buy/:id', protect, buyProduct); // Buy a product (user must be logged in)
+// Get all products
+router.get("/", async (req, res) => {
+  const products = await Product.find();
+  res.json(products);
+});
+
+// Get single product
+router.get("/:id", async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  res.json(product);
+});
+
+// Add product
+router.post("/", async (req, res) => {
+  const { name, image, description, price, category, stock } = req.body;
+  const product = new Product({ name, image, description, price, category, stock });
+  await product.save();
+  res.status(201).json(product);
+});
 
 module.exports = router;
